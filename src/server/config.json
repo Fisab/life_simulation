@@ -1,0 +1,7 @@
+{
+  "WATER": [0, 125, 255],
+
+  "INDEX_BLOCKS": [
+    "WATER"
+  ]
+}

@@ -23,18 +23,34 @@ class MapGenerator:
 		self.__map = []
 
 		self.__seed = random.random()
-		self.__scale = 0.05
+		self.__scale = 0.025
 
 	def generate_map(self, return_map=False):
-		world = np.zeros((self.__map_size['x'], self.__map_size['y']))
+		# gen empty list
+		# world = np.zeros((self.__map_size['x'], self.__map_size['y']))
+		world = []
+		for y in range(self.__map_size['y']):
+			world.append([[0, -1]] * self.__map_size['x'])  # height, type of block
+
+		# gen noise
 		for y in range(self.__map_size['x']):
 			for x in range(self.__map_size['y']):
-				world[y][x] = noise.pnoise3(
-					float(x) * self.__scale,
-					float(y) * self.__scale,
-					self.__seed,
-					1
-				)
+				world[y][x] = [
+					noise.pnoise3(
+						float(x) * self.__scale,
+						float(y) * self.__scale,
+						self.__seed,
+						1
+					),
+					-1
+				]
+
+		# place water...
+		for y in range(self.__map_size['x']):
+			for x in range(self.__map_size['y']):
+				if world[y][x][0] < 0:
+					world[y][x] = [world[y][x][0], 0]
+		#
 
 		if return_map is True:
 			return world

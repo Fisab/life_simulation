@@ -2,8 +2,10 @@ import gen_map
 from PIL import Image, ImageDraw
 import time
 import helpers
+import color_picker
 
-generator = gen_map.MapGenerator(size_x=1000, size_y=1000)
+generator = gen_map.MapGenerator(size_x=250, size_y=250)
+color_pick = color_picker.ColorPicker()
 
 cells = generator.generate_map(return_map=True)
 
@@ -51,10 +53,21 @@ for y, _ in enumerate(cells):
 			x * cell_size + cell_size,
 			y * cell_size + cell_size
 		]
-		draw.rectangle(xy, fill=helpers.blend(cells[y][x]))
+		if cells[y][x][1] != color_pick.EMPTY:
+			color = color_pick.get_color_by_id(int(cells[y][x][1]))
+
+			if color_pick.get_name_by_id(int(cells[y][x][1])) == 'WATER':  # shade dependence on height
+				color = (
+					color[0],
+					int(color[1] + cells[y][x][0] * 250),
+					color[2]
+				)
+			draw.rectangle(xy, fill=color)
+		else:
+			draw.rectangle(xy, fill=helpers.blend(cells[y][x][0]))
 
 draw_grid(draw)
 
-img.save('map.jpg')
+img.save('../../imgs/map_example.jpg')
 
 print('Time spent for draw and save img -', time.time() - s_time)

@@ -114,5 +114,4 @@ dmypy.json
 .pyre/
 .DS_Store
 .idea/
-src/server/map.jpg
 src/server/episodes.pkl
