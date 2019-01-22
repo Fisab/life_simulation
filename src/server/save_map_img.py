@@ -7,10 +7,13 @@ import color_picker
 generator = gen_map.MapGenerator(size_x=250, size_y=250)
 color_pick = color_picker.ColorPicker()
 
-cells = generator.generate_map(return_map=True)
+generator.generate_world()
+
+cells = generator.get_world_type_blocks()
+cells_height = generator.get_world_height()
 
 cell_size = 16
-cell_amount = generator.get_map_size()
+cell_amount = generator.get_world_size()
 
 map_surface_size = (
 	cell_amount['x'] * cell_size,
@@ -53,18 +56,18 @@ for y, _ in enumerate(cells):
 			x * cell_size + cell_size,
 			y * cell_size + cell_size
 		]
-		if cells[y][x][1] != color_pick.EMPTY:
-			color = color_pick.get_color_by_id(int(cells[y][x][1]))
+		if cells[y][x] != color_pick.EMPTY:
+			color = color_pick.get_color_by_id(int(cells[y][x]))
 
-			if color_pick.get_name_by_id(int(cells[y][x][1])) == 'WATER':  # shade dependence on height
+			if color_pick.get_name_by_id(int(cells[y][x])) == 'WATER':  # shade dependence on height
 				color = (
 					color[0],
-					int(color[1] + cells[y][x][0] * 250),
+					int(color[1] + cells_height[y][x] * 250),
 					color[2]
 				)
 			draw.rectangle(xy, fill=color)
 		else:
-			draw.rectangle(xy, fill=helpers.blend(cells[y][x][0]))
+			draw.rectangle(xy, fill=helpers.blend(cells_height[y][x]))
 
 draw_grid(draw)
 

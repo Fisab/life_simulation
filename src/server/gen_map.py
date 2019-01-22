@@ -15,85 +15,50 @@ class MapGenerator:
 		# 1 - second
 		# etc...
 
-		self.__map_size = {
+		self.__world_size = {
 			'x': size_x,
 			'y': size_y
 		}
 
-		self.__map = []
+		self.__world_type_blocks = []
+		self.__world_height = []
 
 		self.__seed = random.random()
 		self.__scale = 0.025
 
-	def generate_map(self, return_map=False):
+	def generate_world(self):
 		# gen empty list
 
 		# idk how create array like this in numpy [[0, 0], ...]
-		# world = np.zeros((self.__map_size['x'], self.__map_size['y']))
-		
-		world = []
-		for y in range(self.__map_size['y']):
-			world.append([[0, -1]] * self.__map_size['x'])  # height, type of block
+		self.__world_height = np.zeros((self.__world_size['x'], self.__world_size['y']))
+		self.__world_type_blocks = np.ones((self.__world_size['x'], self.__world_size['y'])) * -1
 
-		# gen noise
-		for y in range(self.__map_size['x']):
-			for x in range(self.__map_size['y']):
-				world[y][x] = [
-					noise.pnoise3(
-						float(x) * self.__scale,
-						float(y) * self.__scale,
-						self.__seed,
-						1
-					),
-					-1
-				]
+		for y in range(self.__world_size['x']):
+			for x in range(self.__world_size['y']):
+				# gen noise
+				height = noise.pnoise3(
+					float(x) * self.__scale,
+					float(y) * self.__scale,
+					self.__seed,
+					1
+				)
+				self.__world_height[y][x] = height
 
-		# place water...
-		for y in range(self.__map_size['x']):
-			for x in range(self.__map_size['y']):
-				if world[y][x][0] < 0:
-					world[y][x] = [world[y][x][0], 0]
-		#
+				# place water...
+				if height < 0:
+					self.__world_type_blocks[y][x] = 0
 
-		if return_map is True:
-			return world
-		else:
-			self.__map = world
+	def get_world_height(self):
+		return self.__world_height
 
-	def generate_empty_map(self, size_x=None, size_y=None, return_map=False):
-		"""
-		Just generate simple 2D array with '0'
+	def get_world_type_blocks(self):
+		return self.__world_type_blocks
 
-		:This function will clear self.__map if return_map is False
+	def get_world_size(self):
+		return self.__world_size
 
-		:param size_x: size map at axis x if it's None value get from init
-		:param size_y: size map at axis y if it's None value get from init
-		:param return_map: if it True will return map and doesn't save into self.__map
-		:return: None
-		"""
-		if size_x is None:
-			size_x = self.__map_size['x']
-		if size_y is None:
-			size_y = self.__map_size['y']
-
-		map = []
-		for x in range(size_y):
-			if return_map is True:
-				map.append([0] * size_x)
-			else:
-				self.__map.append([0] * size_x)
-
-		if return_map is True:
-			return map
-
-	def get_map(self):
-		return self.__map
-
-	def get_map_size(self):
-		return self.__map_size
-
-	def append_hashed_map(self, map):
-		self.__hashed_map.append(map)
+	def append_hashed_world(self, world):
+		self.__hashed_map.append(world)
 
 	@staticmethod
 	def __save_file(file_name, data):
@@ -128,14 +93,14 @@ class MapGenerator:
 	def save_episodes(self, file_name='episodes.pkl'):
 		self.__save_file(file_name, self.__hashed_map)
 
-	def save_map(self, file_name='map.pkl'):
-		self.__save_file(file_name, self.__map)
+	def save_world_type_blocks(self, file_name='world.pkl'):
+		self.__save_file(file_name, self.__world_type_blocks)
 
 	def load_episodes(self, file_name='episodes.pkl'):
 		self.__hashed_map = self.__load_file(file_name)
 
-	def load_map(self, file_name='map.pkl'):
-		self.__map = self.__load_file(file_name)
+	def load_world(self, file_name='world.pkl'):
+		self.__world_type_blocks = self.__load_file(file_name)
 
 
 if __name__ == '__main__':
@@ -143,9 +108,10 @@ if __name__ == '__main__':
 
 	time_eps = []
 	s_time_all = time.time()
-	for _ in range(100):
+	for _ in range(10):
 		s_time_ep = time.time()
-		generator.append_hashed_map(generator.generate_empty_map(return_map=True))
+		generator.generate_world()
+		generator.append_hashed_world(generator.get_world_type_blocks())
 		time_eps.append(time.time() - s_time_ep)
 
 	print('Spent time for all episodes generating map -', time.time() - s_time_all)
