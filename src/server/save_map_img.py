@@ -1,19 +1,20 @@
 import gen_map
 from PIL import Image, ImageDraw
 import time
+import helpers
 
 generator = gen_map.MapGenerator(size_x=1000, size_y=1000)
 
-cells = generator.generate_empty_map(return_map=True)
+cells = generator.generate_map(return_map=True)
 
 cell_size = 16
 cell_amount = generator.get_map_size()
+
 map_surface_size = (
 	cell_amount['x'] * cell_size,
 	cell_amount['y'] * cell_size
 )
 
-empty_color = '#FF0000'
 grid_color = '#3C3F41'
 
 
@@ -50,7 +51,7 @@ for y, _ in enumerate(cells):
 			x * cell_size + cell_size,
 			y * cell_size + cell_size
 		]
-		draw.rectangle(xy, fill=empty_color)
+		draw.rectangle(xy, fill=helpers.blend(cells[y][x]))
 
 draw_grid(draw)
 

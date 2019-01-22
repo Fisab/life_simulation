@@ -25,7 +25,7 @@ class MapGenerator:
 		self.__seed = random.random()
 		self.__scale = 0.05
 
-	def generate_map(self):
+	def generate_map(self, return_map=False):
 		world = np.zeros((self.__map_size['x'], self.__map_size['y']))
 		for y in range(self.__map_size['x']):
 			for x in range(self.__map_size['y']):
@@ -35,6 +35,11 @@ class MapGenerator:
 					self.__seed,
 					1
 				)
+
+		if return_map is True:
+			return world
+		else:
+			self.__map = world
 
 	def generate_empty_map(self, size_x=None, size_y=None, return_map=False):
 		"""
