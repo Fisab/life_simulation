@@ -7,7 +7,7 @@ import numpy as np
 import helpers
 
 
-class mapGenerator:
+class MapGenerator:
 	def __init__(self, size_x=1000, size_y=1000):
 		self.__hashed_map = []
 		# hashed_map contains all episode's after start simulation
@@ -111,7 +111,7 @@ class mapGenerator:
 
 
 if __name__ == '__main__':
-	generator = mapGenerator()
+	generator = MapGenerator()
 
 	time_eps = []
 	s_time_all = time.time()
