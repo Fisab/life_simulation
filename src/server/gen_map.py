@@ -64,6 +64,9 @@ class MapGenerator:
 	def get_map(self):
 		return self.__map
 
+	def get_map_size(self):
+		return  self.__map_size
+
 	def append_hashed_map(self, map):
 		self.__hashed_map.append(map)
 
