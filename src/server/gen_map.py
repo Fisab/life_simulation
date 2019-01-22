@@ -27,7 +27,10 @@ class MapGenerator:
 
 	def generate_map(self, return_map=False):
 		# gen empty list
+
+		# idk how create array like this in numpy [[0, 0], ...]
 		# world = np.zeros((self.__map_size['x'], self.__map_size['y']))
+		
 		world = []
 		for y in range(self.__map_size['y']):
 			world.append([[0, -1]] * self.__map_size['x'])  # height, type of block
@@ -65,6 +68,7 @@ class MapGenerator:
 
 		:param size_x: size map at axis x if it's None value get from init
 		:param size_y: size map at axis y if it's None value get from init
+		:param return_map: if it True will return map and doesn't save into self.__map
 		:return: None
 		"""
 		if size_x is None:
@@ -86,7 +90,7 @@ class MapGenerator:
 		return self.__map
 
 	def get_map_size(self):
-		return  self.__map_size
+		return self.__map_size
 
 	def append_hashed_map(self, map):
 		self.__hashed_map.append(map)
