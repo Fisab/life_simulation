@@ -4,7 +4,7 @@ import time
 import helpers
 import color_picker
 
-generator = gen_map.MapGenerator(size_x=10000, size_y=10000)
+generator = gen_map.MapGenerator(size_x=1000, size_y=1000)
 color_pick = color_picker.ColorPicker()
 
 s_time_gen_world = time.time()
