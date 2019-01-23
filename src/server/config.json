@@ -3,9 +3,21 @@
   "SAND": [237, 201, 175],
   "MOUNTAIN": [112,128,144],
 
+  "ICE": [102, 137, 255],
+  "SNOW": [229, 235, 255],
+  "LAND": [139, 69, 19],
+  "GRASS": [0, 166, 0],
+  "SNOW_MOUNTAIN": [255,255,255],
+
   "INDEX_BLOCKS": [
     "WATER",
     "SAND",
-    "MOUNTAIN"
+    "MOUNTAIN",
+    "ICE",
+    "SNOW",
+    "LAND",
+    "GRASS",
+    "SNOW_MOUNTAIN"
+
   ]
 }

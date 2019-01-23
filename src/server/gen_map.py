@@ -22,14 +22,18 @@ class MapGenerator:
 		}
 
 		self.__world_type_blocks = []
-		self.__world_height = []
 
-		self.__seed = random.random()
+		self.__world_height = []
+		self.__world_temp = [] # temperature
+
+		self.__seed_height = random.random()
+		self.__seed_temp = random.random()
+
 		self.__scale = 0.015
 
 		self.__color_pick = color_picker.ColorPicker()
 
-	def get_dist_nearest_block(self, block_id, cur_pos, radius_lookup=5):
+	def get_dist_nearest_block(self, cur_pos, radius_lookup=5):
 		"""
 		Find any nearest block which equal for block_id.
 		Finding block from pos - cur_pos
@@ -37,7 +41,9 @@ class MapGenerator:
 		:param cur_pos: example: {'x': 12, 'y': 12}
 		:return: distance to any block with same block_id, float
 		"""
-		nearest_block_pos = None
+		nearest_block_pos = {
+			self.__color_pick.get_name_by_id(i): None for i in self.__color_pick.get_available_ids()
+		}
 
 		for radius in range(1, radius_lookup):
 			for i in range(cur_pos['x'] - radius, cur_pos['x'] + radius + 1):
@@ -47,19 +53,23 @@ class MapGenerator:
 					i < 0:
 					continue
 
-				if self.__world_type_blocks[cur_pos['y'] - radius][i] == block_id:
-					nearest_block_pos = {
-						'x': i,
-						'y': cur_pos['y'] - radius
-					}
-					break
+				if self.__world_type_blocks[cur_pos['y'] - radius][i] != self.__color_pick.EMPTY:
+					block_id = self.__world_type_blocks[cur_pos['y'] - radius][i]
+					block_name = self.__color_pick.get_name_by_id(block_id)
+					if nearest_block_pos[block_name] is None:
+						nearest_block_pos[block_name] = {
+							'x': i,
+							'y': cur_pos['y'] - radius
+						}
 
-				if self.__world_type_blocks[cur_pos['y'] + radius][i] == block_id:
-					nearest_block_pos = {
-						'x': i,
-						'y': cur_pos['y'] + radius
-					}
-					break
+				if self.__world_type_blocks[cur_pos['y'] + radius][i] != self.__color_pick.EMPTY:
+					block_id = self.__world_type_blocks[cur_pos['y'] + radius][i]
+					block_name = self.__color_pick.get_name_by_id(block_id)
+					if nearest_block_pos[block_name] is None:
+						nearest_block_pos[block_name] = {
+							'x': i,
+							'y': cur_pos['y'] + radius
+						}
 
 			for i in range(cur_pos['y'] - radius, cur_pos['y'] + radius + 1):
 				if cur_pos['x'] - radius < 0 or \
@@ -68,67 +78,110 @@ class MapGenerator:
 					i < 0:
 					continue
 
-				if self.__world_type_blocks[i][cur_pos['x'] - radius] == block_id:
-					nearest_block_pos = {
-						'x': cur_pos['x'] - radius,
-						'y': i
-					}
-					break
+				if self.__world_type_blocks[i][cur_pos['x'] - radius] != self.__color_pick.EMPTY:
+					block_id = self.__world_type_blocks[i][cur_pos['x'] - radius]
+					block_name = self.__color_pick.get_name_by_id(block_id)
+					if nearest_block_pos[block_name] is None:
+						nearest_block_pos[block_name] = {
+							'x': i,
+							'y': cur_pos['x'] - radius
+						}
 
-				if self.__world_type_blocks[i][cur_pos['x'] + radius] == block_id:
-					nearest_block_pos = {
-						'x': cur_pos['x'] + radius,
-						'y': i
-					}
-					break
+				if self.__world_type_blocks[i][cur_pos['x'] + radius] != self.__color_pick.EMPTY:
+					block_id = self.__world_type_blocks[i][cur_pos['x'] + radius]
+					block_name = self.__color_pick.get_name_by_id(block_id)
+					if nearest_block_pos[block_name] is None:
+						nearest_block_pos[block_name] = {
+							'x': i,
+							'y': cur_pos['x'] + radius
+						}
 
-			if nearest_block_pos is not None:
-				break
+		for block_name in nearest_block_pos:
+			if nearest_block_pos[block_name] is None:
+				continue
+			nearest_block_pos[block_name] = (
+				(nearest_block_pos[block_name]['x'] - cur_pos['x'])**2 +
+				(nearest_block_pos[block_name]['y'] - cur_pos['y'])**2
+			)**0.5
 
-		if nearest_block_pos is None:
-			return
-
-		return ((nearest_block_pos['x'] - cur_pos['x'])**2 + (nearest_block_pos['y'] - cur_pos['y'])**2)**0.5
+		return nearest_block_pos
 
 	def generate_world(self):
-		# gen empty list
+		helpers.log('Generating map...')
 
-		# idk how create array like this in numpy [[0, 0], ...]
 		self.__world_height = np.zeros((self.__world_size['x'], self.__world_size['y']))
+		self.__world_temp = np.zeros((self.__world_size['x'], self.__world_size['y']))
 		self.__world_type_blocks = np.ones((self.__world_size['x'], self.__world_size['y'])) * -1
 
+		helpers.log('\t-| Generating noise, placing water and mountains...')
 		for y in range(self.__world_size['x']):
 			for x in range(self.__world_size['y']):
 				# gen noise
 				height = noise.pnoise3(
 					float(x) * self.__scale,
 					float(y) * self.__scale,
-					self.__seed,
+					self.__seed_height,
 					1
 				)
+				temp = noise.pnoise3(
+					float(x) * self.__scale,
+					float(y) * self.__scale,
+					self.__seed_temp,
+					1
+				)
+
 				self.__world_height[y][x] = height
+				self.__world_temp[y][x] = temp
 
 				# place water...
 				if height < -0.15:
-					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('WATER')
+					if temp < -0.2:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('ICE')
+					else:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('WATER')
 
 				# place mountains...
-				if height > 0.6:
-					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('MOUNTAIN')
+				if height > 0.5:
+					if temp < 0.45:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW_MOUNTAIN')
+					else:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('MOUNTAIN')
 
-
+		helpers.log('\t-| Placing sand, snow, land, grass...')
 		for y in range(self.__world_size['x']):
 			for x in range(self.__world_size['y']):
-				# place sand...
 				if self.__world_type_blocks[y][x] != self.__color_pick.EMPTY:
 					continue
-				cur_pos = {
-					'x': x,
-					'y': y
-				}
-				distance = self.get_dist_nearest_block(self.__color_pick.get_id_by_name('WATER'), cur_pos, radius_lookup=10)
-				if distance is not None and distance < 10:
+
+				# At part below for place snow and sand i try find nearest blocks(water, ice), but it too slow.
+				# Seems without this world look pretty too
+				# Maybe i will have an idea how optimize this, or, or just delete :P
+				# cur_pos = {
+				# 	'x': x,
+				# 	'y': y
+				# }
+				# distance_blocks = self.get_dist_nearest_block(cur_pos, radius_lookup=10)
+
+				# place snow
+				# if distance_blocks['SNOW'] is not None and distance_blocks['SNOW'] < 1:
+				# 	self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW')
+				# else:
+				# 	# place sand...
+				# 	if distance_blocks['WATER'] is not None and distance_blocks['WATER'] < 8:
+				# 		self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
+				# if self.__world_type_blocks[y][x] != self.__color_pick.EMPTY:
+				# 	continue
+
+				# place land, grass, snow, sand
+				if self.__world_temp[y][x] > 0.5:
 					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
+				elif self.__world_temp[y][x] < -0.15:
+					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW')
+				else:
+					if self.__world_temp[y][x] > 0.1:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('GRASS')
+					else:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('LAND')
 
 	def get_world_height(self):
 		return self.__world_height

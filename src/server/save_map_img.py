@@ -4,15 +4,19 @@ import time
 import helpers
 import color_picker
 
-generator = gen_map.MapGenerator(size_x=500, size_y=500)
+generator = gen_map.MapGenerator(size_x=10000, size_y=10000)
 color_pick = color_picker.ColorPicker()
 
+s_time_gen_world = time.time()
+
 generator.generate_world()
+
+print('Time spent for generating world -', time.time() - s_time_gen_world)
 
 cells = generator.get_world_type_blocks()
 cells_height = generator.get_world_height()
 
-cell_size = 8
+cell_size = 4
 cell_amount = generator.get_world_size()
 
 map_surface_size = (
@@ -67,7 +71,8 @@ for y, _ in enumerate(cells):
 				)
 			draw.rectangle(xy, fill=color)
 		else:
-			draw.rectangle(xy, fill=helpers.blend(cells_height[y][x]))
+			# draw.rectangle(xy, fill=helpers.blend(cells_height[y][x]))
+			draw.rectangle(xy, fill=(0, 0, 0))
 
 draw_grid(draw)
 

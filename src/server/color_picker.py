@@ -45,7 +45,7 @@ class ColorPicker:
 		:param id: block id, example: 0
 		:return: block name, example: "WATER"
 		"""
-		return self.__colors['INDEX_BLOCKS'][id]
+		return self.__colors['INDEX_BLOCKS'][int(id)]
 
 	def get_id_by_name(self, name):
 		"""
