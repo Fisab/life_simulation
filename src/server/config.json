@@ -1,9 +1,11 @@
 {
   "WATER": [0, 125, 255],
   "SAND": [237, 201, 175],
+  "MOUNTAIN": [112,128,144],
 
   "INDEX_BLOCKS": [
     "WATER",
-    "SAND"
+    "SAND",
+    "MOUNTAIN"
   ]
 }

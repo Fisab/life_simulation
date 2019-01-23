@@ -110,7 +110,12 @@ class MapGenerator:
 
 				# place water...
 				if height < -0.15:
-					self.__world_type_blocks[y][x] = 0
+					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('WATER')
+
+				# place mountains...
+				if height > 0.6:
+					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('MOUNTAIN')
+
 
 		for y in range(self.__world_size['x']):
 			for x in range(self.__world_size['y']):
@@ -121,8 +126,8 @@ class MapGenerator:
 					'x': x,
 					'y': y
 				}
-				distance = self.get_dist_nearest_block(self.__color_pick.get_id_by_name('WATER'), cur_pos)
-				if distance is not None and distance < 3:
+				distance = self.get_dist_nearest_block(self.__color_pick.get_id_by_name('WATER'), cur_pos, radius_lookup=10)
+				if distance is not None and distance < 10:
 					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
 
 	def get_world_height(self):
