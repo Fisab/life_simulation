@@ -48,6 +48,14 @@ class MapGenerator:
 				if height < 0:
 					self.__world_type_blocks[y][x] = 0
 
+	def get_dist_nearest_block(self, cur_pos, block_type):
+		"""
+		:param block_type: example: "WATER"
+		:param cur_pos: from which block find nearest, example: {'x': 20, 'y': 20}
+		:return: distance to nearest block with same block_type, example: 20
+		"""
+		pass
+
 	def get_world_height(self):
 		return self.__world_height
 
