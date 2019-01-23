@@ -12,7 +12,7 @@ generator.generate_world()
 cells = generator.get_world_type_blocks()
 cells_height = generator.get_world_height()
 
-cell_size = 16
+cell_size = 8
 cell_amount = generator.get_world_size()
 
 map_surface_size = (

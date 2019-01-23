@@ -5,6 +5,7 @@ import pickle
 import os
 import numpy as np
 import helpers
+import color_picker
 
 
 class MapGenerator:
@@ -24,7 +25,70 @@ class MapGenerator:
 		self.__world_height = []
 
 		self.__seed = random.random()
-		self.__scale = 0.025
+		self.__scale = 0.015
+
+		self.__color_pick = color_picker.ColorPicker()
+
+	def get_dist_nearest_block(self, block_id, cur_pos, radius_lookup=5):
+		"""
+		Find any nearest block which equal for block_id.
+		Finding block from pos - cur_pos
+		:param block_id: example: 0
+		:param cur_pos: example: {'x': 12, 'y': 12}
+		:return: distance to any block with same block_id, float
+		"""
+		nearest_block_pos = None
+
+		for radius in range(1, radius_lookup):
+			for i in range(cur_pos['x'] - radius, cur_pos['x'] + radius + 1):
+				if cur_pos['y'] - radius < 0 or \
+					cur_pos['y'] + radius >= self.__world_size['y'] - 1 or \
+					i > self.__world_size['x'] - 1 or \
+					i < 0:
+					continue
+
+				if self.__world_type_blocks[cur_pos['y'] - radius][i] == block_id:
+					nearest_block_pos = {
+						'x': i,
+						'y': cur_pos['y'] - radius
+					}
+					break
+
+				if self.__world_type_blocks[cur_pos['y'] + radius][i] == block_id:
+					nearest_block_pos = {
+						'x': i,
+						'y': cur_pos['y'] + radius
+					}
+					break
+
+			for i in range(cur_pos['y'] - radius, cur_pos['y'] + radius + 1):
+				if cur_pos['x'] - radius < 0 or \
+					cur_pos['x'] + radius >= self.__world_size['x'] - 1 or \
+					i > self.__world_size['y'] - 1 or \
+					i < 0:
+					continue
+
+				if self.__world_type_blocks[i][cur_pos['x'] - radius] == block_id:
+					nearest_block_pos = {
+						'x': cur_pos['x'] - radius,
+						'y': i
+					}
+					break
+
+				if self.__world_type_blocks[i][cur_pos['x'] + radius] == block_id:
+					nearest_block_pos = {
+						'x': cur_pos['x'] + radius,
+						'y': i
+					}
+					break
+
+			if nearest_block_pos is not None:
+				break
+
+		if nearest_block_pos is None:
+			return
+
+		return ((nearest_block_pos['x'] - cur_pos['x'])**2 + (nearest_block_pos['y'] - cur_pos['y'])**2)**0.5
 
 	def generate_world(self):
 		# gen empty list
@@ -45,16 +109,21 @@ class MapGenerator:
 				self.__world_height[y][x] = height
 
 				# place water...
-				if height < 0:
+				if height < -0.15:
 					self.__world_type_blocks[y][x] = 0
 
-	def get_dist_nearest_block(self, cur_pos, block_type):
-		"""
-		:param block_type: example: "WATER"
-		:param cur_pos: from which block find nearest, example: {'x': 20, 'y': 20}
-		:return: distance to nearest block with same block_type, example: 20
-		"""
-		pass
+		for y in range(self.__world_size['x']):
+			for x in range(self.__world_size['y']):
+				# place sand...
+				if self.__world_type_blocks[y][x] != self.__color_pick.EMPTY:
+					continue
+				cur_pos = {
+					'x': x,
+					'y': y
+				}
+				distance = self.get_dist_nearest_block(self.__color_pick.get_id_by_name('WATER'), cur_pos)
+				if distance is not None and distance < 3:
+					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
 
 	def get_world_height(self):
 		return self.__world_height
