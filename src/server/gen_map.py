@@ -106,6 +106,44 @@ class MapGenerator:
 
 		return nearest_block_pos
 
+	def process_weather(self):
+		self.__world_temp = np.roll(self.__world_temp, 1, axis=1)
+
+		for y in range(self.__world_size['x']):
+			for x in range(self.__world_size['y']):
+				# place water...
+				if self.__world_height[y][x] < -0.15:
+					if self.__world_temp[y][x] < -0.2:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('ICE')
+						continue
+					else:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('WATER')
+						continue
+
+				# place mountains...
+				if self.__world_height[y][x] > 0.5:
+					if self.__world_temp[y][x] < 0.45:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW_MOUNTAIN')
+						continue
+					else:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('MOUNTAIN')
+						continue
+
+				# place land, grass, snow, sand
+				if self.__world_temp[y][x] > 0.5:
+					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
+					continue
+				elif self.__world_temp[y][x] < -0.15:
+					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW')
+					continue
+				else:
+					if self.__world_temp[y][x] > 0.1:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('GRASS')
+						continue
+					else:
+						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('LAND')
+						continue
+
 	def generate_world(self):
 		helpers.log('Generating map...')
 
@@ -113,7 +151,7 @@ class MapGenerator:
 		self.__world_temp = np.zeros((self.__world_size['x'], self.__world_size['y']))
 		self.__world_type_blocks = np.ones((self.__world_size['x'], self.__world_size['y'])) * -1
 
-		helpers.log('\t-| Generating noise, placing water and mountains...')
+		helpers.log('\t-| Generating noise, placing blocks...')
 		for y in range(self.__world_size['x']):
 			for x in range(self.__world_size['y']):
 				# gen noise
@@ -137,51 +175,34 @@ class MapGenerator:
 				if height < -0.15:
 					if temp < -0.2:
 						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('ICE')
+						continue
 					else:
 						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('WATER')
+						continue
 
 				# place mountains...
 				if height > 0.5:
 					if temp < 0.45:
 						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW_MOUNTAIN')
+						continue
 					else:
 						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('MOUNTAIN')
-
-		helpers.log('\t-| Placing sand, snow, land, grass...')
-		for y in range(self.__world_size['x']):
-			for x in range(self.__world_size['y']):
-				if self.__world_type_blocks[y][x] != self.__color_pick.EMPTY:
-					continue
-
-				# At part below for place snow and sand i try find nearest blocks(water, ice), but it too slow.
-				# Seems without this world look pretty too
-				# Maybe i will have an idea how optimize this, or, or just delete :P
-				# cur_pos = {
-				# 	'x': x,
-				# 	'y': y
-				# }
-				# distance_blocks = self.get_dist_nearest_block(cur_pos, radius_lookup=10)
-
-				# place snow
-				# if distance_blocks['SNOW'] is not None and distance_blocks['SNOW'] < 1:
-				# 	self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW')
-				# else:
-				# 	# place sand...
-				# 	if distance_blocks['WATER'] is not None and distance_blocks['WATER'] < 8:
-				# 		self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
-				# if self.__world_type_blocks[y][x] != self.__color_pick.EMPTY:
-				# 	continue
+						continue
 
 				# place land, grass, snow, sand
-				if self.__world_temp[y][x] > 0.5:
+				if temp > 0.5:
 					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SAND')
-				elif self.__world_temp[y][x] < -0.15:
+					continue
+				elif temp < -0.15:
 					self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('SNOW')
+					continue
 				else:
-					if self.__world_temp[y][x] > 0.1:
+					if temp > 0.1:
 						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('GRASS')
+						continue
 					else:
 						self.__world_type_blocks[y][x] = self.__color_pick.get_id_by_name('LAND')
+						continue
 
 	def get_world_height(self):
 		return self.__world_height

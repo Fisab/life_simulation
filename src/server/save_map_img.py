@@ -4,7 +4,7 @@ import time
 import helpers
 import color_picker
 
-generator = gen_map.MapGenerator(size_x=1000, size_y=1000)
+generator = gen_map.MapGenerator(size_x=300, size_y=300)
 color_pick = color_picker.ColorPicker()
 
 s_time_gen_world = time.time()
@@ -47,35 +47,48 @@ def draw_grid(draw_obj):
 		draw_obj.line(pos, fill=grid_color)
 
 
-img = Image.new('RGB', map_surface_size)
-draw = ImageDraw.Draw(img)
-
 s_time = time.time()
 
-for y, _ in enumerate(cells):
-	for x, _ in enumerate(cells[y]):
-		xy = [
-			x * cell_size,
-			y * cell_size,
-			x * cell_size + cell_size,
-			y * cell_size + cell_size
-		]
-		if cells[y][x] != color_pick.EMPTY:
-			color = color_pick.get_color_by_id(int(cells[y][x]))
 
-			if color_pick.get_name_by_id(int(cells[y][x])) == 'WATER':  # shade dependence on height
-				color = (
-					color[0],
-					int(color[1] + cells_height[y][x] * 250),
-					color[2]
-				)
-			draw.rectangle(xy, fill=color)
-		else:
-			# draw.rectangle(xy, fill=helpers.blend(cells_height[y][x]))
-			draw.rectangle(xy, fill=(0, 0, 0))
+def draw_map(cells):
+	for y, _ in enumerate(cells):
+		for x, _ in enumerate(cells[y]):
+			xy = [
+				x * cell_size,
+				y * cell_size,
+				x * cell_size + cell_size,
+				y * cell_size + cell_size
+			]
+			if cells[y][x] != color_pick.EMPTY:
+				color = color_pick.get_color_by_id(int(cells[y][x]))
 
-draw_grid(draw)
+				if color_pick.get_name_by_id(int(cells[y][x])) == 'WATER':  # shade dependence on height
+					color = (
+						color[0],
+						int(color[1] + cells_height[y][x] * 250),
+						color[2]
+					)
+				draw.rectangle(xy, fill=color)
+			else:
+				# draw.rectangle(xy, fill=helpers.blend(cells_height[y][x]))
+				draw.rectangle(xy, fill=(0, 0, 0))
 
-img.save('../../imgs/map_example.jpg')
+
+for i in range(50):
+	img = Image.new('RGB', map_surface_size)
+	draw = ImageDraw.Draw(img)
+
+	draw_map(cells)
+	draw_grid(draw)
+
+	generator.process_weather()
+	cells = generator.get_world_type_blocks()
+
+	if len(str(i)) == 1:
+		i = '00' + str(i)
+	elif len(str(i)) == 2:
+		i = '0' + str(i)
+
+	img.save('../../imgs/map_example_%s.jpg' % str(i))
 
 print('Time spent for draw and save img -', time.time() - s_time)
