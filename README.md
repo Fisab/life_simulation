@@ -4,6 +4,7 @@
  - [What is it?](#what_is_it)
  - [Progress](#progress)
  - [Specifications](#specifications)
+ - [Example world](#example)
 ---
 
 ## <a name="what_is_it">What is it?</a>
@@ -18,8 +19,8 @@ This is a simulation of the evolution of 2d cells. Until the end is not decided 
 - Start the implementation of organisms
 - ...
 
+## <a name="example">Example world</a>
 Below u can check example of result runned generator map(will update after any commits which will affect map generator)
-
 ![](https://github.com/Fisab/life_simulation/blob/master/imgs/map_example_1000x1000_000.jpg?raw=true)
 
 
