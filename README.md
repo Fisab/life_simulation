@@ -2,7 +2,7 @@
 
 Now working at generating map. Below u can check example of result runned generator map(will update after any commits which will affect map generator)
 
-![](https://github.com/Fisab/life_simulation/blob/master/imgs/map_example.jpg?raw=true)
+![](https://github.com/Fisab/life_simulation/blob/master/imgs/map_example_000.jpg?raw=true)
 
 # Specifications
  - Server will process game and run in 3 threads

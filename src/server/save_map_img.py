@@ -1,10 +1,9 @@
 import gen_map
 from PIL import Image, ImageDraw
 import time
-import helpers
 import color_picker
 
-generator = gen_map.MapGenerator(size_x=300, size_y=300)
+generator = gen_map.MapGenerator(size_x=1000, size_y=1000)
 color_pick = color_picker.ColorPicker()
 
 s_time_gen_world = time.time()
@@ -47,10 +46,7 @@ def draw_grid(draw_obj):
 		draw_obj.line(pos, fill=grid_color)
 
 
-s_time = time.time()
-
-
-def draw_map(cells):
+def draw_map(cells, draw):
 	for y, _ in enumerate(cells):
 		for x, _ in enumerate(cells[y]):
 			xy = [
@@ -74,21 +70,37 @@ def draw_map(cells):
 				draw.rectangle(xy, fill=(0, 0, 0))
 
 
-for i in range(50):
-	img = Image.new('RGB', map_surface_size)
-	draw = ImageDraw.Draw(img)
+def process(imgs_count=1):
+	global cells
 
-	draw_map(cells)
-	draw_grid(draw)
+	av_time_ep = []
+	for i in range(imgs_count):
+		s_time_ep = time.time()
 
-	generator.process_weather()
-	cells = generator.get_world_type_blocks()
+		img = Image.new('RGB', map_surface_size)
+		draw = ImageDraw.Draw(img)
 
-	if len(str(i)) == 1:
-		i = '00' + str(i)
-	elif len(str(i)) == 2:
-		i = '0' + str(i)
+		draw_map(cells, draw)
+		draw_grid(draw)
 
-	img.save('../../imgs/map_example_%s.jpg' % str(i))
+		generator.process_weather()
+		cells = generator.get_world_type_blocks()
 
-print('Time spent for draw and save img -', time.time() - s_time)
+		if len(str(i)) == 1:
+			i = '00' + str(i)
+		elif len(str(i)) == 2:
+			i = '0' + str(i)
+
+		img.save('../../imgs/map_example_%s.jpg' % str(i))
+
+		av_time_ep.append(time.time() - s_time_ep)
+
+	print('Average time spent for process and save 1 episode -', sum(av_time_ep) / len(av_time_ep))
+
+
+if __name__ == '__main__':
+	s_time = time.time()
+
+	process()
+
+	print('Time spent for draw and save images -', time.time() - s_time)
