@@ -1,11 +1,11 @@
 # life_simulation
-
-
+---
 ### Anchors
  - [What is it?](#what_is_it)
  - [Progress](#progress)
  - [Specifications](#specifications)
 ---
+
 ## <a name="what_is_it">What is it?</a>
 This is a simulation of the evolution of 2d cells. Until the end is not decided how this will be implemented.
 
@@ -30,8 +30,7 @@ Below u can check example of result runned generator map(will update after any c
         - via API local client will get data, and control world
     3. Third thread will process flask SocketIO for local client
         - via SocketIO local client will recieve update on map
-
  - Client just for spectating for this pretty simulation of world
 
 
-I only started work on this project and will update README when developing
+*I only started work on this project and will update README when developing*
