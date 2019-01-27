@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw
 import time
 import color_picker
 
-generator = gen_map.MapGenerator(size_x=1000, size_y=1000)
+generator = gen_map.MapGenerator(size_x=300, size_y=300)
 color_pick = color_picker.ColorPicker()
 
 s_time_gen_world = time.time()
@@ -70,7 +70,7 @@ def draw_map(cells, draw):
 				draw.rectangle(xy, fill=(0, 0, 0))
 
 
-def process(imgs_count=1):
+def process(imgs_count=1, process_weather=False):
 	global cells
 
 	av_time_ep = []
@@ -83,15 +83,16 @@ def process(imgs_count=1):
 		draw_map(cells, draw)
 		draw_grid(draw)
 
-		generator.process_weather()
-		cells = generator.get_world_type_blocks()
+		if process_weather is True:
+			generator.process_weather()
+			cells = generator.get_world_type_blocks()
 
 		if len(str(i)) == 1:
 			i = '00' + str(i)
 		elif len(str(i)) == 2:
 			i = '0' + str(i)
 
-		img.save('../../imgs/map_example_%s.jpg' % str(i))
+		img.save('../../imgs/map_example_%sx%s_%s.jpg' % (generator.get_world_size()['x'], generator.get_world_size()['y'], str(i)))
 
 		av_time_ep.append(time.time() - s_time_ep)
 
@@ -101,6 +102,6 @@ def process(imgs_count=1):
 if __name__ == '__main__':
 	s_time = time.time()
 
-	process()
+	process(imgs_count=100)
 
 	print('Time spent for draw and save images -', time.time() - s_time)
