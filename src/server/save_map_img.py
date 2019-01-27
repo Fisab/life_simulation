@@ -102,6 +102,6 @@ def process(imgs_count=1, process_weather=False):
 if __name__ == '__main__':
 	s_time = time.time()
 
-	process(imgs_count=100)
+	process(imgs_count=1)#00, process_weather=True)
 
 	print('Time spent for draw and save images -', time.time() - s_time)
