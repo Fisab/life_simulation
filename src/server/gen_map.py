@@ -161,12 +161,26 @@ class MapGenerator:
 					self.__seed_height,
 					1
 				)
+
 				temp = noise.pnoise3(
 					float(x) * self.__scale,
 					float(y) * self.__scale,
 					self.__seed_temp,
 					1
 				)
+
+				# Just for test smoothing, but does not matter looks bad
+				# if x / self.__world_size['x'] < 0.1:
+				# 	temp = 0
+				# elif x / self.__world_size['x'] > 0.9:
+				# 	temp = 0
+				# else:
+				# 	temp = noise.pnoise3(
+				# 		float(x) * self.__scale,
+				# 		float(y) * self.__scale,
+				# 		self.__seed_temp,
+				# 		1
+				# 	)
 
 				self.__world_height[y][x] = height
 				self.__world_temp[y][x] = temp
