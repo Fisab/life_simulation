@@ -9,7 +9,7 @@ import color_picker
 
 
 class MapGenerator:
-	def __init__(self, size_x=1000, size_y=1000):
+	def __init__(self, size_x=50, size_y=50):
 		self.__hashed_map = []
 		# hashed_map contains all episode's after start simulation
 		# 0 - contains first map state

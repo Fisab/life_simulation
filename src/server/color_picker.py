@@ -11,6 +11,9 @@ class ColorPicker:
 
 		self.EMPTY = -1
 
+	def get_config(self):
+		return self.__load_config()
+
 	def __load_config(self):
 		"""
 		load file with name equal `self.__config_name`
