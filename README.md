@@ -13,8 +13,10 @@ This is a simulation of the evolution of 2d cells. Until the end is not decided 
 
 ## <a name="progress">Progress</a>
 - ~~Generating map~~
-- Client-server connection
-- Client recieved world and draw real-time
+- ~~Client-server connection~~
+- ~~Client recieved world and draw real-time~~
+- Client recieve world partially and draw(if client move camera, then got new part of world)
+- Mini map at client(not sure about this)
 - ...
 - Start the implementation of organisms
 - ...
