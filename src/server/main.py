@@ -33,12 +33,12 @@ def index():
 @app.route('/get_world')
 def get_world():
 	size_need = {
-		'x': int(request.args.get('x')),
-		'y': int(request.args.get('y'))
+		'x': int(float(request.args.get('x'))),
+		'y': int(float(request.args.get('y')))
 	}
 	offset_need = {
-		'x': int(request.args.get('offset_x')),
-		'y': int(request.args.get('offset_y'))
+		'x': int(float(request.args.get('offset_x'))),
+		'y': int(float(request.args.get('offset_y')))
 	}
 
 	part = helpers.get_part_array(cells, size_need, offset_need)

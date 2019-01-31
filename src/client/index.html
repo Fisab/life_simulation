@@ -65,8 +65,8 @@
 
 		var additionalAreaFactor = 1; // this value need for user can easily move camera(without delay)
 		var needCellsSize = {
-			'x': Math.round(w / cellSize * additionalAreaFactor),
-			'y': Math.round(h / cellSize * additionalAreaFactor),
+			'x': Math.round(w / cellSize),
+			'y': Math.round(h / cellSize),
 			'raw_x': Math.round(w / cellSize),
 			'raw_y': Math.round(h / cellSize),
 			'offset_x': 0,
@@ -123,28 +123,29 @@
 		}
 
 		function retrieveNewData(){
-			console.log('y -', (CAMERA_OFFSET.y + needCellsSize.raw_y), mainWorld.length);
-			console.log('x -', (CAMERA_OFFSET.x + needCellsSize.raw_x), mainWorld[0].length);
+			let needUpdate = false;
 			if ((CAMERA_OFFSET.y + needCellsSize.raw_y) / mainWorld.length > 1){
 				needCellsSize.offset_y += CAMERA_OFFSET.y;
-				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				needUpdate = true;
 				CAMERA_OFFSET.y = 0;
 			}
 			if ((CAMERA_OFFSET.x + needCellsSize.raw_x) / mainWorld[0].length > 1){
 				needCellsSize.offset_x += CAMERA_OFFSET.x;
-				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				needUpdate = true;
 				CAMERA_OFFSET.x = 0;
 			}
 			if (CAMERA_OFFSET.y < 0){
 				needCellsSize.offset_y += CAMERA_OFFSET.y;
-				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				needUpdate = true;
 				CAMERA_OFFSET.y = 0;
 			}
 			if (CAMERA_OFFSET.x < 0){
 				needCellsSize.offset_x += CAMERA_OFFSET.x;
-				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				needUpdate = true;
 				CAMERA_OFFSET.x = 0;
 			}
+			if(needUpdate == true)
+				makeRequest('get_world', needCellsSize, true, 'mainWorld');
 		}
 
 		function componentToHex(c) {
