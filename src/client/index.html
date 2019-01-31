@@ -18,6 +18,13 @@
 			});
 		</script>
 
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+
 	</head>
 
 	<body>
@@ -28,15 +35,19 @@
 	<script type="text/javascript">
 		// retrieve main map
 
-		function makeRequest(endpoint){
+		function makeRequest(endpoint, params){
+			let paramsString = '';
+			for(var i in params){
+				if(paramsString == '')
+					paramsString += '?';
+
+				paramsString += i + '=' + String(params[i]) + '&';
+			}
 			var xhr = new XMLHttpRequest();
-			xhr.open('GET', BASE_URL + endpoint, false)
+			xhr.open('GET', BASE_URL + endpoint + paramsString, false)
 			xhr.send();
 			return JSON.parse(xhr.responseText);
 		}
-
-		var mainWorld = makeRequest('get_example_world');
-		var colorPalette = makeRequest('get_settings');
 
 		// init canvas
 		var canvas = document.getElementById('canvas');
@@ -44,9 +55,16 @@
 		var w = canvas.width = window.innerWidth;
 		var h = canvas.height = window.innerHeight;
 
-		var cellSize = 5;
+		var cellSize = 10;
 
-		console.log(mainWorld[0]);
+		var additionalAreaFactor = 1.4; // this value need for user can easily move camera(without delay)
+		var needCellsSize = {
+			'x': Math.round(w / cellSize * additionalAreaFactor),
+			'y': Math.round(h / cellSize * additionalAreaFactor)
+		}
+
+		var mainWorld = makeRequest('get_world', needCellsSize);
+		var colorPalette = makeRequest('get_settings', {});
 
 		function componentToHex(c) {
 			var hex = c.toString(16);
@@ -58,7 +76,8 @@
 		}
 
 		function drawWorld(){
-			ctx.clearRect(0,0, w,h);
+			ctx.clearRect(0,0, w,h); // clear surface
+			// draw world
 			for(var y in mainWorld){
 				for(var x in mainWorld[y]){
 					ctx.beginPath();
@@ -69,6 +88,23 @@
 					ctx.fillStyle = blockColor;
 					ctx.fill();
 				}
+			}
+
+			// draw grid
+			let lineWidth = 0.4;
+			for (y = 0; y <= h; y++) {
+				ctx.beginPath();
+				ctx.moveTo(y * cellSize, 0);
+				ctx.lineTo(y * cellSize, h);
+				ctx.lineWidth = lineWidth;
+				ctx.stroke();
+			}
+			for (x = 0; x <= w; x++) {
+				ctx.beginPath();
+				ctx.moveTo(0, x * cellSize);
+				ctx.lineTo(w, x * cellSize);
+				ctx.lineWidth = lineWidth;
+				ctx.stroke();
 			}
 		}
 

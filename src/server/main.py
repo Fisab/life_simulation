@@ -1,5 +1,5 @@
 import threading
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, send, emit
 from flask_cors import CORS
 from color_picker import ColorPicker
@@ -23,8 +23,14 @@ def index():
 	return render_template('index.html')
 
 
-@app.route('/get_map')
-def get_map():
+@app.route('/get_world')
+def get_world():
+	size_need = {
+		'x': int(request.args.get('x')),
+		'y': int(request.args.get('y'))
+	}
+	print(size_need)
+
 	print('Someone get map')
 	world = []
 	size = {
@@ -32,9 +38,7 @@ def get_map():
 		'y': 20
 	}
 
-	for y in range(size['y']):
-		world.append([-1] * size['x'])
-	return jsonify(world)
+	return jsonify(cells.tolist())
 
 
 @app.route('/get_settings')
@@ -47,6 +51,7 @@ def get_settings():
 def get_example_world():
 	return jsonify(cells.tolist())
 #####
+
 
 @socketio.on('connect')
 def handle_connect():

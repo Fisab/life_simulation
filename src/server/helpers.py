@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 
 def log(*argv):
@@ -26,3 +27,17 @@ def blend(alpha, base=(255, 255, 255), color=(0, 0, 0)):
 
 def sleep(sec):
 	time.sleep(sec)
+
+
+def get_part_array(array, part, offset={'x': 0, 'y': 0}):
+	"""
+	Retrieve part of array
+	:param array: supposed for world
+	:param part: size of x and y
+	:param offset: offset for world
+	:return: part of world
+	"""
+	result = []
+	for i in array[offset['y']:part['y']+offset['y']]:
+		result.append(i[offset['x']:part['x']+offset['x']])
+	return np.array(result)
