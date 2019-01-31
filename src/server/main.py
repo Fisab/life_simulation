@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, send, emit
 from flask_cors import CORS
 from color_picker import ColorPicker
 from gen_map import MapGenerator
+import helpers
 
 app = Flask(__name__, template_folder='../client')
 app.config['SECRET_KEY'] = 'secret!'
@@ -29,28 +30,20 @@ def get_world():
 		'x': int(request.args.get('x')),
 		'y': int(request.args.get('y'))
 	}
-	print(size_need)
-
-	print('Someone get map')
-	world = []
-	size = {
-		'x': 20,
-		'y': 20
+	offset_need = {
+		'x': int(request.args.get('offset_x')),
+		'y': int(request.args.get('offset_y'))
 	}
 
-	return jsonify(cells.tolist())
+	part = helpers.get_part_array(cells, size_need, offset_need)
+
+	return jsonify(part.tolist())
 
 
 @app.route('/get_settings')
 def get_settings():
 	print('Someone retrieve palette')
 	return jsonify(colorPicker.get_config())
-
-
-@app.route('/get_example_world')
-def get_example_world():
-	return jsonify(cells.tolist())
-#####
 
 
 @socketio.on('connect')
