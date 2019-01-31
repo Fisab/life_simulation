@@ -12,7 +12,13 @@ CORS(app)
 socketio = SocketIO(app)
 
 colorPicker = ColorPicker()
-generator = MapGenerator(size_x=300, size_y=400)
+
+map_size = {
+	'x': 200,
+	'y': 300
+}
+
+generator = MapGenerator(size_x=map_size['x'], size_y=map_size['y'])
 
 generator.generate_world()
 cells = generator.get_world_type_blocks()
@@ -43,7 +49,10 @@ def get_world():
 @app.route('/get_settings')
 def get_settings():
 	print('Someone retrieve palette')
-	return jsonify(colorPicker.get_config())
+	settings = colorPicker.get_config()
+	settings['map_size'] = map_size
+
+	return jsonify(settings)
 
 
 @socketio.on('connect')

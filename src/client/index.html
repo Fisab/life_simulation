@@ -6,7 +6,7 @@
 
 		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 		<script type="text/javascript" charset="utf-8">
-			// init connection and retrieve main map
+			// init websocket connection
 			var BASE_URL = 'http://127.0.0.1:10001/';
 			var socket = io.connect(BASE_URL);
 			socket.on('connect', function(data) {
@@ -29,14 +29,11 @@
 	</head>
 
 	<body>
-		<!-- <p>Hello world</p> -->
 		<canvas id="canvas"></canvas>
 	</body>
 
 	<script type="text/javascript">
-		// retrieve main map
-
-		function makeRequest(endpoint, params){
+		function makeRequest(endpoint, params, async, variable_to_modify){
 			let paramsString = '';
 			for(var i in params){
 				if(paramsString == '')
@@ -44,11 +41,19 @@
 
 				paramsString += i + '=' + String(params[i]) + '&';
 			}
+			var url = BASE_URL + endpoint + paramsString;
+			console.log(url);
 			var xhr = new XMLHttpRequest();
-			xhr.open('GET', BASE_URL + endpoint + paramsString, false)
+			xhr.open('GET', url, async)
 			xhr.send();
-			return JSON.parse(xhr.responseText);
+			if(variable_to_modify != undefined){
+				if(variable_to_modify == 'mainWorld')
+					xhr.addEventListener('load', modifierListenerWorld);
+			} else {
+				return JSON.parse(xhr.responseText);
+			}
 		}
+		function modifierListenerWorld(){mainWorld = JSON.parse(this.responseText);}
 
 		// init canvas
 		var canvas = document.getElementById('canvas');
@@ -58,7 +63,7 @@
 
 		var cellSize = 10;
 
-		var additionalAreaFactor = 1.5; // this value need for user can easily move camera(without delay)
+		var additionalAreaFactor = 1; // this value need for user can easily move camera(without delay)
 		var needCellsSize = {
 			'x': Math.round(w / cellSize * additionalAreaFactor),
 			'y': Math.round(h / cellSize * additionalAreaFactor),
@@ -69,20 +74,25 @@
 		}
 		console.log(needCellsSize)
 
-		var mainWorld = makeRequest('get_world', needCellsSize);
-		var colorPalette = makeRequest('get_settings', {});
+		// retrieve main map
+		var mainWorld = makeRequest('get_world', needCellsSize, false);
+		var SETTINGS = makeRequest('get_settings', {}, false);
 
 		var CAMERA_OFFSET = {
 			x: 0,
 			y: 0
 		}
+		var GLOBAL_OFFSET = {
+			x: 0,
+			y: 0
+		}
 
+		// detecting keys and moving camera
 		var keys = [];
 		window.addEventListener("keydown",
 			function(e){
 				keys[e.keyCode] = true;
 				checkCombinations();
-				// console.log(keys)
 			},
 		false);
 
@@ -91,25 +101,49 @@
 				keys[e.keyCode] = false;
 			},
 		false);
-		// document.addEventListener("keypress", function(event) {
+
 		function checkCombinations(){
-			if(65 in keys && keys[65] == true){
+			if(65 in keys && keys[65] == true && needCellsSize.offset_x > 0){
 				// keycode "a"
-				if(CAMERA_OFFSET.x > 0)
-					CAMERA_OFFSET.x -= 1;
+				CAMERA_OFFSET.x -= 1;
 			}
-			if (68 in keys && keys[68] == true) {
+			if (68 in keys && keys[68] == true && SETTINGS.map_size.x > needCellsSize.offset_x + needCellsSize.x) {
 				// keycode "d"
 				CAMERA_OFFSET.x += 1;
 			}
-			if (87 in keys && keys[87] == true) {
+			if (87 in keys && keys[87] == true && needCellsSize.offset_y > 0) {
 				// keycode "w"
-				if (CAMERA_OFFSET.y > 0)
-					CAMERA_OFFSET.y -= 1;
+				CAMERA_OFFSET.y -= 1;
 			}
-			if (83 in keys && keys[83] == true) {
+			if (83 in keys && keys[83] == true && SETTINGS.map_size.y > needCellsSize.offset_y  + needCellsSize.y) {
 				// keycode "s"
 				CAMERA_OFFSET.y += 1;
+			}
+			retrieveNewData();
+		}
+
+		function retrieveNewData(){
+			console.log('y -', (CAMERA_OFFSET.y + needCellsSize.raw_y), mainWorld.length);
+			console.log('x -', (CAMERA_OFFSET.x + needCellsSize.raw_x), mainWorld[0].length);
+			if ((CAMERA_OFFSET.y + needCellsSize.raw_y) / mainWorld.length > 1){
+				needCellsSize.offset_y += CAMERA_OFFSET.y;
+				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				CAMERA_OFFSET.y = 0;
+			}
+			if ((CAMERA_OFFSET.x + needCellsSize.raw_x) / mainWorld[0].length > 1){
+				needCellsSize.offset_x += CAMERA_OFFSET.x;
+				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				CAMERA_OFFSET.x = 0;
+			}
+			if (CAMERA_OFFSET.y < 0){
+				needCellsSize.offset_y += CAMERA_OFFSET.y;
+				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				CAMERA_OFFSET.y = 0;
+			}
+			if (CAMERA_OFFSET.x < 0){
+				needCellsSize.offset_x += CAMERA_OFFSET.x;
+				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+				CAMERA_OFFSET.x = 0;
 			}
 		}
 
@@ -124,26 +158,25 @@
 
 		function drawWorld(){
 			ctx.clearRect(0,0, w,h); // clear surface
+
 			// draw world
 			for(var y in mainWorld.slice(CAMERA_OFFSET.y, CAMERA_OFFSET.y + needCellsSize.raw_y)){
 				for(var x in mainWorld[y].slice(CAMERA_OFFSET.x, CAMERA_OFFSET.x + needCellsSize.raw_x)){
 					ctx.beginPath();
 					ctx.rect(
-						(x) * cellSize,
-						(y) * cellSize,
+						x * cellSize + CAMERA_OFFSET.x,
+						y * cellSize + CAMERA_OFFSET.y,
 						cellSize,
 						cellSize
 					);
-					let blockName = colorPalette['BLOCKS']['INDEX_BLOCKS'][mainWorld[Number(y) + CAMERA_OFFSET.y][Number(x) + CAMERA_OFFSET.x]];
+					let blockName = SETTINGS['BLOCKS']['INDEX_BLOCKS'][mainWorld[Number(y) + CAMERA_OFFSET.y][Number(x) + CAMERA_OFFSET.x]];
 					
-					let blockColor = rgbToHex(colorPalette['BLOCKS'][blockName]);
+					let blockColor = rgbToHex(SETTINGS['BLOCKS'][blockName]);
 
 					ctx.fillStyle = blockColor;
 					ctx.fill();
 				}
 			}
-			// console.log(CAMERA_OFFSET)
-			// console.log(mainWorld.slice(CAMERA_OFFSET.y, CAMERA_OFFSET.y + needCellsSize.raw_y).length)
 
 			// draw grid
 			let lineWidth = 0.4;
