@@ -109,8 +109,8 @@ class MapGenerator:
 	def process_weather(self):
 		self.__world_temp = np.roll(self.__world_temp, 1, axis=1)
 
-		for y in range(self.__world_size['x']):
-			for x in range(self.__world_size['y']):
+		for y in range(self.__world_size['y']):
+			for x in range(self.__world_size['x']):
 				# place water...
 				if self.__world_height[y][x] < -0.15:
 					if self.__world_temp[y][x] < -0.2:
@@ -147,13 +147,13 @@ class MapGenerator:
 	def generate_world(self):
 		helpers.log('Generating map...')
 
-		self.__world_height = np.zeros((self.__world_size['x'], self.__world_size['y']))
-		self.__world_temp = np.zeros((self.__world_size['x'], self.__world_size['y']))
-		self.__world_type_blocks = np.ones((self.__world_size['x'], self.__world_size['y'])) * -1
+		self.__world_height = np.zeros((self.__world_size['y'], self.__world_size['x']))
+		self.__world_temp = np.zeros((self.__world_size['y'], self.__world_size['x']))
+		self.__world_type_blocks = np.ones((self.__world_size['y'], self.__world_size['x'])) * -1
 
 		helpers.log('\t-| Generating noise, placing blocks...')
-		for y in range(self.__world_size['x']):
-			for x in range(self.__world_size['y']):
+		for y in range(self.__world_size['y']):
+			for x in range(self.__world_size['x']):
 				# gen noise
 				height = noise.pnoise3(
 					float(x) * self.__scale,
