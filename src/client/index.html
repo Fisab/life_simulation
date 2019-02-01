@@ -53,7 +53,7 @@
 				return JSON.parse(xhr.responseText);
 			}
 		}
-		function modifierListenerWorld(){mainWorld = JSON.parse(this.responseText);}
+		function modifierListenerWorld(){mainWorld = JSON.parse(this.responseText); console.log(mainWorld[0].length, mainWorld.length)}
 
 		// init canvas
 		var canvas = document.getElementById('canvas');
@@ -63,7 +63,7 @@
 
 		var cellSize = 10;
 
-		var additionalAreaFactor = 1; // this value need for user can easily move camera(without delay)
+		var additionalAreaFactor = 1.2; // this value need for user can easily move camera(without delay)
 		var needCellsSize = {
 			'x': Math.round(w / cellSize),
 			'y': Math.round(h / cellSize),
@@ -105,19 +105,19 @@
 		function checkCombinations(){
 			if(65 in keys && keys[65] == true && needCellsSize.offset_x > 0){
 				// keycode "a"
-				CAMERA_OFFSET.x -= 1;
+				CAMERA_OFFSET.x -= 2;
 			}
 			if (68 in keys && keys[68] == true && SETTINGS.map_size.x > needCellsSize.offset_x + needCellsSize.x) {
 				// keycode "d"
-				CAMERA_OFFSET.x += 1;
+				CAMERA_OFFSET.x += 2;
 			}
 			if (87 in keys && keys[87] == true && needCellsSize.offset_y > 0) {
 				// keycode "w"
-				CAMERA_OFFSET.y -= 1;
+				CAMERA_OFFSET.y -= 2;
 			}
 			if (83 in keys && keys[83] == true && SETTINGS.map_size.y > needCellsSize.offset_y  + needCellsSize.y) {
 				// keycode "s"
-				CAMERA_OFFSET.y += 1;
+				CAMERA_OFFSET.y += 2;
 			}
 			retrieveNewData();
 		}
