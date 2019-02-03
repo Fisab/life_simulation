@@ -29,7 +29,7 @@ def sleep(sec):
 	time.sleep(sec)
 
 
-def get_part_array(array, part, offset={'x': 0, 'y': 0}):
+def get_part_array(array, part, additional_area, offset={'x': 0, 'y': 0}):
 	"""
 	Retrieve part of array
 	:param array: supposed for world
@@ -38,6 +38,18 @@ def get_part_array(array, part, offset={'x': 0, 'y': 0}):
 	:return: part of world
 	"""
 	result = []
-	for i in array[offset['y']:part['y']+offset['y']]:
-		result.append(i[offset['x']:part['x']+offset['x']])
+
+	offset_before = {
+		'x': offset['x'] - additional_area['x'],
+		'y': offset['y'] - additional_area['y']
+	}
+	if offset_before['x'] < 0:
+		print('set x')
+		offset_before['x'] = 0
+	if offset_before['y'] < 0:
+		print('set y')
+		offset_before['y'] = 0
+
+	for i in array[offset_before['y'] : offset['y']+part['y']+additional_area['y']]:
+		result.append(i[offset_before['x'] : offset['x']+part['x']+additional_area['x']])
 	return np.array(result)

@@ -33,7 +33,7 @@
 	</body>
 
 	<script type="text/javascript">
-		function makeRequest(endpoint, params, async, variable_to_modify){
+		function makeRequest(endpoint, params, async, variable_to_modify, needUpdate){
 			let paramsString = '';
 			for(var i in params){
 				if(paramsString == '')
@@ -48,12 +48,22 @@
 			xhr.send();
 			if(variable_to_modify != undefined){
 				if(variable_to_modify == 'mainWorld')
-					xhr.addEventListener('load', modifierListenerWorld);
+					xhr.addEventListener('load', function(data){modifierListenerWorld(data, needUpdate)});
 			} else {
 				return JSON.parse(xhr.responseText);
 			}
 		}
-		function modifierListenerWorld(){mainWorld = JSON.parse(this.responseText); console.log(mainWorld[0].length, mainWorld.length)}
+		function modifierListenerWorld(data, needUpdate){
+			mainWorld = JSON.parse(data.currentTarget.responseText); 
+			console.log(mainWorld[0].length, mainWorld.length, needUpdate);
+			if(needUpdate.offset_x == true){
+				CAMERA_OFFSET.x = needCellsSize.additional_area_x;
+			}
+			if(needUpdate.offset_y == true){
+				CAMERA_OFFSET.y = needCellsSize.additional_area_y;
+			}
+			OFFSET_UPDATED = true;
+		}
 
 		// init canvas
 		var canvas = document.getElementById('canvas');
@@ -63,29 +73,30 @@
 
 		var cellSize = 10;
 
-		var additionalAreaFactor = 1.2; // this value need for user can easily move camera(without delay)
+		var additionalAreaFactor = 1.5; // this value need for user can easily move camera(without delay)
 		var needCellsSize = {
 			'x': Math.round(w / cellSize),
 			'y': Math.round(h / cellSize),
-			'raw_x': Math.round(w / cellSize),
-			'raw_y': Math.round(h / cellSize),
-			'offset_x': 0,
-			'offset_y': 0
+			'offset_x': 90,
+			'offset_y': 200,
+
+			'additional_area_x': Math.round(w / cellSize / additionalAreaFactor),
+			'additional_area_y': Math.round(h / cellSize / additionalAreaFactor)
 		}
-		console.log(needCellsSize)
+		console.log('needCellsSize -', needCellsSize);
 
 		// retrieve main map
 		var mainWorld = makeRequest('get_world', needCellsSize, false);
 		var SETTINGS = makeRequest('get_settings', {}, false);
 
+		console.log('map_size -', SETTINGS.map_size)
+
 		var CAMERA_OFFSET = {
-			x: 0,
-			y: 0
+			x: needCellsSize.additional_area_x,
+			y: needCellsSize.additional_area_y
 		}
-		var GLOBAL_OFFSET = {
-			x: 0,
-			y: 0
-		}
+		var OFFSET_UPDATED = true;
+		var cameraSpeed = 2;
 
 		// detecting keys and moving camera
 		var keys = [];
@@ -103,49 +114,60 @@
 		false);
 
 		function checkCombinations(){
-			if(65 in keys && keys[65] == true && needCellsSize.offset_x > 0){
+			if(OFFSET_UPDATED == false){
+				return
+			}
+			if(65 in keys && keys[65] == true && needCellsSize.offset_x + CAMERA_OFFSET.x - needCellsSize.additional_area_x > needCellsSize.x * 0.1){
 				// keycode "a"
-				CAMERA_OFFSET.x -= 2;
+				CAMERA_OFFSET.x -= cameraSpeed;
 			}
-			if (68 in keys && keys[68] == true && SETTINGS.map_size.x > needCellsSize.offset_x + needCellsSize.x) {
+			if (68 in keys && keys[68] == true && SETTINGS.map_size.x > needCellsSize.offset_x + needCellsSize.x + needCellsSize.additional_area_x) {
 				// keycode "d"
-				CAMERA_OFFSET.x += 2;
+				CAMERA_OFFSET.x += cameraSpeed;
 			}
-			if (87 in keys && keys[87] == true && needCellsSize.offset_y > 0) {
+			if (87 in keys && keys[87] == true && needCellsSize.offset_y + CAMERA_OFFSET.y - needCellsSize.additional_area_y > needCellsSize.y * 0.1) {
 				// keycode "w"
-				CAMERA_OFFSET.y -= 2;
+				CAMERA_OFFSET.y -= cameraSpeed;
 			}
-			if (83 in keys && keys[83] == true && SETTINGS.map_size.y > needCellsSize.offset_y  + needCellsSize.y) {
+			if (83 in keys && keys[83] == true && SETTINGS.map_size.y > needCellsSize.offset_y  + needCellsSize.y + needCellsSize.additional_area_y) {
 				// keycode "s"
-				CAMERA_OFFSET.y += 2;
+				CAMERA_OFFSET.y += cameraSpeed;
 			}
 			retrieveNewData();
+			console.log('CAMERA_OFFSET -', CAMERA_OFFSET);
 		}
 
 		function retrieveNewData(){
-			let needUpdate = false;
-			if ((CAMERA_OFFSET.y + needCellsSize.raw_y) / mainWorld.length > 1){
-				needCellsSize.offset_y += CAMERA_OFFSET.y;
-				needUpdate = true;
-				CAMERA_OFFSET.y = 0;
+			let needUpdate = {
+				map: false,
+				offset_x: false,
+				offset_y: false
 			}
-			if ((CAMERA_OFFSET.x + needCellsSize.raw_x) / mainWorld[0].length > 1){
-				needCellsSize.offset_x += CAMERA_OFFSET.x;
-				needUpdate = true;
-				CAMERA_OFFSET.x = 0;
+			if ((CAMERA_OFFSET.y + needCellsSize.y) / mainWorld.length > 1 && needCellsSize.y + needCellsSize.offset_y < SETTINGS.map_size.y){
+				needCellsSize.offset_y += CAMERA_OFFSET.y - needCellsSize.additional_area_y;
+				needUpdate.map = true;
+				needUpdate.offset_y = true;
 			}
-			if (CAMERA_OFFSET.y < 0){
-				needCellsSize.offset_y += CAMERA_OFFSET.y;
-				needUpdate = true;
-				CAMERA_OFFSET.y = 0;
+			if ((CAMERA_OFFSET.x + needCellsSize.x) / mainWorld[0].length > 1 && needCellsSize.x + needCellsSize.offset_x < SETTINGS.map_size.x){
+				needCellsSize.offset_x += CAMERA_OFFSET.x - needCellsSize.additional_area_x;
+				needUpdate.map = true;
+				needUpdate.offset_x = true;
 			}
-			if (CAMERA_OFFSET.x < 0){
-				needCellsSize.offset_x += CAMERA_OFFSET.x;
-				needUpdate = true;
-				CAMERA_OFFSET.x = 0;
+			if (CAMERA_OFFSET.y < 0 && needCellsSize.offset_y > 0){
+				needCellsSize.offset_y += CAMERA_OFFSET.y - needCellsSize.additional_area_y;
+				needUpdate.map = true;
+				needUpdate.offset_y = true;
 			}
-			if(needUpdate == true)
-				makeRequest('get_world', needCellsSize, true, 'mainWorld');
+			if (CAMERA_OFFSET.x < 0 && needCellsSize.offset_x > 0){
+				needCellsSize.offset_x += CAMERA_OFFSET.x - needCellsSize.additional_area_x;
+				needUpdate.map = true;
+				needUpdate.offset_x = true;
+			}
+
+			if(needUpdate.map == true){
+				OFFSET_UPDATED = false;
+				makeRequest('get_world', needCellsSize, true, 'mainWorld', needUpdate);
+			}
 		}
 
 		function componentToHex(c) {
@@ -161,17 +183,17 @@
 			ctx.clearRect(0,0, w,h); // clear surface
 
 			// draw world
-			for(var y in mainWorld.slice(CAMERA_OFFSET.y, CAMERA_OFFSET.y + needCellsSize.raw_y)){
-				for(var x in mainWorld[y].slice(CAMERA_OFFSET.x, CAMERA_OFFSET.x + needCellsSize.raw_x)){
+			for(var y in mainWorld.slice(CAMERA_OFFSET.y, CAMERA_OFFSET.y + needCellsSize.y)){
+				for(var x in mainWorld[y].slice(CAMERA_OFFSET.x, CAMERA_OFFSET.x + needCellsSize.x)){
 					ctx.beginPath();
 					ctx.rect(
-						x * cellSize + CAMERA_OFFSET.x,
-						y * cellSize + CAMERA_OFFSET.y,
+						x * cellSize,
+						y * cellSize,
 						cellSize,
 						cellSize
 					);
+
 					let blockName = SETTINGS['BLOCKS']['INDEX_BLOCKS'][mainWorld[Number(y) + CAMERA_OFFSET.y][Number(x) + CAMERA_OFFSET.x]];
-					
 					let blockColor = rgbToHex(SETTINGS['BLOCKS'][blockName]);
 
 					ctx.fillStyle = blockColor;
