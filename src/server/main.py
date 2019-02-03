@@ -1,4 +1,3 @@
-import threading
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, send, emit
 from flask_cors import CORS
@@ -14,8 +13,8 @@ socketio = SocketIO(app)
 colorPicker = ColorPicker()
 
 map_size = {
-	'x': 200,
-	'y': 300
+	'x': 1000,
+	'y': 500
 }
 
 generator = MapGenerator(size_x=map_size['x'], size_y=map_size['y'])
@@ -40,9 +39,13 @@ def get_world():
 		'x': int(float(request.args.get('offset_x'))),
 		'y': int(float(request.args.get('offset_y')))
 	}
+	additional_area = {
+		'x': int(float(request.args.get('additional_area_x'))),
+		'y': int(float(request.args.get('additional_area_y')))
+	}
 
-	part = helpers.get_part_array(cells, size_need, offset_need)
-
+	part = helpers.get_part_array(cells, size_need, additional_area, offset_need)
+	print(part.shape)
 	return jsonify(part.tolist())
 
 
